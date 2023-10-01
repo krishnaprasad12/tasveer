@@ -1,11 +1,10 @@
 import React, {useState, useEffect} from 'react';
-import {Loader, card, FormField} from '../components';
+import {Card, FormField, Loader} from '../components';
 
 const RenderCards = ({data,title}) => {
   if(data?.length>0) {
-    return data.map((post) => <card key={post._id} {...post} />)
+    return (data.map((post) => <Card key={post._id} {...post} />));
   }
-
   return (
     <h2 className='mt-5 font-bold text-[#6449ff] text-xl uppercase'>
       {title}
@@ -15,8 +14,33 @@ const RenderCards = ({data,title}) => {
 const Home = () => {
 
   const [loading,setLoading] = useState(false);
-  const [allPost,setAllPosts] = useState(null);
+  const [allPosts,setAllPosts] = useState(null);
   const [searchText,setSearchText] = useState('');
+
+    const fetchPosts = async() => {
+      setLoading(true);
+      try {
+        const response = await fetch('http://localhost:8080/api/v1/post',{
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        if(response.ok) {
+          const result = await response.json();
+          setAllPosts(result.data.reverse());
+        }
+      } catch (error) {
+        alert(error)
+      } finally {
+        setLoading(false);
+      }
+    }
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
   return (
         <section className='max-w-7xl mx-auto'>
           <div>
@@ -46,7 +70,7 @@ const Home = () => {
                   {searchText ? (
                     <RenderCards data={[]} title ="No search results found" />
                   ):(
-                    <RenderCards data= {[]}
+                    <RenderCards data={allPosts}
                       title = "No posts found"
                     />
                   )}
